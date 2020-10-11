@@ -36,6 +36,8 @@ function! leaderf#Rg#Maps()
     nnoremap <buffer> <silent> d             :exec g:Lf_py "rgExplManager.deleteCurrentLine()"<CR>
     nnoremap <buffer> <silent> Q             :exec g:Lf_py "rgExplManager.outputToQflist()"<CR>
     nnoremap <buffer> <silent> L             :exec g:Lf_py "rgExplManager.outputToLoclist()"<CR>
+    nnoremap <buffer> <silent> r             :exec g:Lf_py "rgExplManager.replace()"<CR>
+    nnoremap <buffer> <silent> w             :exec g:Lf_py "rgExplManager.applyChanges()"<CR>
     if has("nvim")
         nnoremap <buffer> <silent> <C-Up>    :exec g:Lf_py "rgExplManager._toUpInPopup()"<CR>
         nnoremap <buffer> <silent> <C-Down>  :exec g:Lf_py "rgExplManager._toDownInPopup()"<CR>

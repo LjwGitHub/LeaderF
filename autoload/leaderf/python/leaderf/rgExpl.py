@@ -412,6 +412,7 @@ class RgExplManager(Manager):
         super(RgExplManager, self).__init__()
         self._match_path = False
         self._has_column = False
+        self._orig_buffer = []
 
     def _getExplClass(self):
         return RgExplorer
@@ -875,6 +876,71 @@ class RgExplManager(Manager):
                         "text": text,
                     })
         return items
+
+    def replace(self):
+        try:
+            if not self._getInstance().buffer.options["modifiable"]:
+                lfCmd("setlocal buftype=")
+                lfCmd("setlocal nomodified")
+                lfCmd("setlocal modifiable")
+                lfCmd("setlocal undolevels=1000")
+
+            lfCmd("echohl Question")
+            self._orig_buffer = self._getInstance().buffer[:]
+
+            text = ("" if len(self._getExplorer().getPatternRegex()) == 0
+                    else self._getExplorer().getPatternRegex()[0])
+            pattern = lfEval("input('Pattern: ', '%s')" % escQuote(text))
+            string = lfEval("input('Replace with: ')")
+            flags = lfEval("input('flags: ', 'gc')")
+            lfCmd("keepp %%s/\(^.\+\(:\d\+:\|-\d\+-\).\{-}\)\@<=%s/%s/%s" %
+                    (pattern.replace('/', '\/'), string.replace('/', '\/'), flags))
+        finally:
+            lfCmd("echohl None")
+
+    def applyChanges(self):
+        if not self._getInstance().buffer.options["modified"]:
+            return
+
+        for line in self._getInstance().buffer:
+            if "-A" in self._arguments or "-B" in self._arguments or "-C" in self._arguments:
+                m = re.match(r'^(.+?)([:-])(\d+)\2', line)
+                file, sep, line_num = m.group(1, 2, 3)
+                if not os.path.exists(lfDecode(file)):
+                    if sep == ':':
+                        sep = '-'
+                    else:
+                        sep = ':'
+                    m = re.match(r'^(.+?)%s(\d+)%s' % (sep, sep), line)
+                    if m:
+                        file, line_num = m.group(1, 2)
+                if not re.search(r"\d+_'No_Name_(\d+)'", file):
+                    i = 1
+                    while not os.path.exists(lfDecode(file)):
+                        m = re.match(r'^(.+?(?:([:-])\d+.*?){%d})\2(\d+)\2' % i, line)
+                        i += 1
+                        file, line_num = m.group(1, 3)
+            else:
+                m = re.match(r'^(.+?):(\d+):', line)
+                file, line_num = m.group(1, 2)
+                if not re.search(r"\d+_'No_Name_(\d+)'", file):
+                    i = 1
+                    while not os.path.exists(lfDecode(file)):
+                        m = re.match(r'^(.+?(?::\d+.*?){%d}):(\d+):' % i, line)
+                        i += 1
+                        file, line_num = m.group(1, 2)
+
+            if not os.path.isabs(file):
+                file = os.path.join(self._getInstance().getCwd(), lfDecode(file))
+                file = os.path.normpath(lfEncode(file))
+
+            if lfEval("bufloaded('%s')" % escQuote(file)) == '0':
+                lfCmd("hide edit %s" % escSpecial(file))
+
+            buf_number = int(lfEval("bufnr('%s')" % escQuote(file)))
+
+
+
 
 #*****************************************************
 # rgExplManager is a singleton
