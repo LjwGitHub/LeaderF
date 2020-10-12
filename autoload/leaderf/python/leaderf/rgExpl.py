@@ -902,42 +902,73 @@ class RgExplManager(Manager):
         if not self._getInstance().buffer.options["modified"]:
             return
 
-        for line in self._getInstance().buffer:
-            if "-A" in self._arguments or "-B" in self._arguments or "-C" in self._arguments:
-                m = re.match(r'^(.+?)([:-])(\d+)\2', line)
-                file, sep, line_num = m.group(1, 2, 3)
-                if not os.path.exists(lfDecode(file)):
-                    if sep == ':':
-                        sep = '-'
+        try:
+            orig_pos = self._getInstance().getOriginalPos()
+            cur_pos = (vim.current.tabpage, vim.current.window, vim.current.buffer)
+
+            saved_eventignore = vim.options['eventignore']
+            vim.options['eventignore'] = 'BufLeave,WinEnter,BufEnter'
+            vim.current.tabpage, vim.current.window, vim.current.buffer = orig_pos
+            vim.options['eventignore'] = saved_eventignore
+
+            for n, line in enumerate(self._getInstance().buffer):
+                try:
+                    if self._orig_buffer[n] == line: # no changes
+                        continue
+
+                    if "-A" in self._arguments or "-B" in self._arguments or "-C" in self._arguments:
+                        m = re.match(r'^(.+?)([:-])(\d+)\2', line)
+                        file, sep, line_num = m.group(1, 2, 3)
+                        if not os.path.exists(lfDecode(file)):
+                            if sep == ':':
+                                sep = '-'
+                            else:
+                                sep = ':'
+                            m = re.match(r'^(.+?)%s(\d+)%s' % (sep, sep), line)
+                            if m:
+                                file, line_num = m.group(1, 2)
+                        if not re.search(r"\d+_'No_Name_(\d+)'", file):
+                            i = 1
+                            while not os.path.exists(lfDecode(file)):
+                                m = re.match(r'^(.+?(?:([:-])\d+.*?){%d})\2(\d+)\2' % i, line)
+                                i += 1
+                                file, line_num = m.group(1, 3)
                     else:
-                        sep = ':'
-                    m = re.match(r'^(.+?)%s(\d+)%s' % (sep, sep), line)
-                    if m:
-                        file, line_num = m.group(1, 2)
-                if not re.search(r"\d+_'No_Name_(\d+)'", file):
-                    i = 1
-                    while not os.path.exists(lfDecode(file)):
-                        m = re.match(r'^(.+?(?:([:-])\d+.*?){%d})\2(\d+)\2' % i, line)
-                        i += 1
-                        file, line_num = m.group(1, 3)
-            else:
-                m = re.match(r'^(.+?):(\d+):', line)
-                file, line_num = m.group(1, 2)
-                if not re.search(r"\d+_'No_Name_(\d+)'", file):
-                    i = 1
-                    while not os.path.exists(lfDecode(file)):
-                        m = re.match(r'^(.+?(?::\d+.*?){%d}):(\d+):' % i, line)
-                        i += 1
-                        file, line_num = m.group(1, 2)
+                        m = re.match(r'^(.+?):(\d+):(.*)', line)
+                        file, line_num, content = m.group(1, 2, 3)
+                        # if os.name != 'nt' and not re.search(r"\d+_'No_Name_(\d+)'", file):
+                        if not re.search(r"\d+_'No_Name_(\d+)'", file):
+                            i = 1
+                            while not os.path.exists(lfDecode(file)):
+                                m = re.match(r'^(.+?(?::\d+.*?){%d}):(\d+):(.*)' % i, line)
+                                i += 1
+                                file, line_num, content = m.group(1, 2, 3)
 
-            if not os.path.isabs(file):
-                file = os.path.join(self._getInstance().getCwd(), lfDecode(file))
-                file = os.path.normpath(lfEncode(file))
+                    if not os.path.isabs(file):
+                        file = os.path.join(self._getInstance().getCwd(), lfDecode(file))
+                        file = os.path.normpath(lfEncode(file))
 
-            if lfEval("bufloaded('%s')" % escQuote(file)) == '0':
-                lfCmd("hide edit %s" % escSpecial(file))
+                    if lfEval("bufloaded('%s')" % escQuote(file)) == '0':
+                        lfCmd("hide edit %s" % escSpecial(file))
 
-            buf_number = int(lfEval("bufnr('%s')" % escQuote(file)))
+                    buf_number = int(lfEval("bufnr('%s')" % escQuote(file)))
+                    vim.buffers[buf_number][int(line_num) - 1] = content
+                    # lfCmd("redraw | echo 'writing to %s'" % escQuote(file))
+                except vim.error as e:
+                    lfPrintError(e)
+        except KeyboardInterrupt: # <C-C>
+            pass
+        finally:
+            saved_eventignore = vim.options['eventignore']
+            vim.options['eventignore'] = 'BufLeave,WinEnter,BufEnter'
+            vim.current.tabpage, vim.current.window, vim.current.buffer = cur_pos
+            vim.options['eventignore'] = saved_eventignore
+
+            lfCmd("setlocal buftype=nofile")
+            lfCmd("setlocal nomodified")
+            lfCmd("setlocal nomodifiable")
+            lfCmd("setlocal undolevels=-1")
+            lfCmd("echohl WarningMsg | redraw | echo ' Done!' | echohl None")
 
 
 
