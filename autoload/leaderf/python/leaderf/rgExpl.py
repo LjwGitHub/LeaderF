@@ -891,10 +891,13 @@ class RgExplManager(Manager):
             text = ("" if len(self._getExplorer().getPatternRegex()) == 0
                     else self._getExplorer().getPatternRegex()[0])
             pattern = lfEval("input('Pattern: ', '%s')" % escQuote(text))
+            if pattern == '':
+                return
             string = lfEval("input('Replace with: ')")
             flags = lfEval("input('flags: ', 'gc')")
-            lfCmd("keepp %%s/\(^.\+\(:\d\+:\|-\d\+-\).\{-}\)\@<=%s/%s/%s" %
-                    (pattern.replace('/', '\/'), string.replace('/', '\/'), flags))
+            lfCmd("keepp %d;$s/\(^.\+\(:\d\+:\|-\d\+-\).\{-}\)\@<=%s/%s/%s" %
+                    (self._getInstance().helpLength + 1, pattern.replace('/', '\/'),
+                     string.replace('/', '\/'), flags))
         finally:
             lfCmd("echohl None")
 

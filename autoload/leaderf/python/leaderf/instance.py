@@ -238,7 +238,7 @@ class LfInstance(object):
         self._orig_pos = () # (tabpage, window, buffer)
         self._running_status = 0
         self._cursor_row = None
-        self._help_length = None
+        self._help_length = 0
         self._current_working_directory = None
         self._cur_buffer_name_ignored = False
         self._ignore_cur_buffer_name = lfEval("get(g:, 'Lf_IgnoreCurrentBufferName', 0)") == '1' \
