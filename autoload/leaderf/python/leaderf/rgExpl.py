@@ -880,7 +880,8 @@ class RgExplManager(Manager):
     def replace(self):
         try:
             if not self._getInstance().buffer.options["modifiable"]:
-                lfCmd("setlocal buftype=")
+                lfCmd("setlocal buftype=acwrite")
+                lfCmd("autocmd! BufWriteCmd <buffer> setlocal nomodified")
                 lfCmd("setlocal nomodified")
                 lfCmd("setlocal modifiable")
                 lfCmd("setlocal undolevels=1000")
