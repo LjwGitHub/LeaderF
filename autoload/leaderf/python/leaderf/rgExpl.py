@@ -881,7 +881,8 @@ class RgExplManager(Manager):
         try:
             if not self._getInstance().buffer.options["modifiable"]:
                 lfCmd("setlocal buftype=acwrite")
-                lfCmd("autocmd! BufWriteCmd <buffer> setlocal nomodified")
+                lfCmd("autocmd! BufWriteCmd <buffer> nested call leaderf#Rg#ApplyChanges(0)")
+                lfCmd("command! -buffer W call leaderf#Rg#ApplyChanges(1)")
                 lfCmd("setlocal nomodified")
                 lfCmd("setlocal modifiable")
                 lfCmd("setlocal undolevels=1000")
@@ -902,7 +903,7 @@ class RgExplManager(Manager):
         finally:
             lfCmd("echohl None")
 
-    def applyChanges(self):
+    def applyChanges(self, autosave=False):
         if not self._getInstance().buffer.options["modified"]:
             return
 
@@ -915,6 +916,7 @@ class RgExplManager(Manager):
             vim.current.tabpage, vim.current.window, vim.current.buffer = orig_pos
             vim.options['eventignore'] = saved_eventignore
 
+            buf_number_dict = {}
             for n, line in enumerate(self._getInstance().buffer):
                 try:
                     if self._orig_buffer[n] == line: # no changes
@@ -957,9 +959,15 @@ class RgExplManager(Manager):
 
                     buf_number = int(lfEval("bufnr('%s')" % escQuote(file)))
                     vim.buffers[buf_number][int(line_num) - 1] = content
-                    # lfCmd("redraw | echo 'writing to %s'" % escQuote(file))
+                    buf_number_dict[buf_number] = 0
                 except vim.error as e:
                     lfPrintError(e)
+                except Exception as e:
+                    lfPrintError(e)
+
+            if autosave:
+                lfCmd("bufdo call leaderf#Rg#SaveCurrentBuffer(%s)" % str(buf_number_dict))
+
         except KeyboardInterrupt: # <C-C>
             pass
         finally:
@@ -973,8 +981,6 @@ class RgExplManager(Manager):
             lfCmd("setlocal nomodifiable")
             lfCmd("setlocal undolevels=-1")
             lfCmd("echohl WarningMsg | redraw | echo ' Done!' | echohl None")
-
-
 
 
 #*****************************************************

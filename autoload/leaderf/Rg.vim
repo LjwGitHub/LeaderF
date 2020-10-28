@@ -38,6 +38,7 @@ function! leaderf#Rg#Maps()
     nnoremap <buffer> <silent> L             :exec g:Lf_py "rgExplManager.outputToLoclist()"<CR>
     nnoremap <buffer> <silent> r             :exec g:Lf_py "rgExplManager.replace()"<CR>
     nnoremap <buffer> <silent> w             :exec g:Lf_py "rgExplManager.applyChanges()"<CR>
+    nnoremap <buffer> <silent> W             :exec g:Lf_py "rgExplManager.applyChanges(True)"<CR>
     if has("nvim")
         nnoremap <buffer> <silent> <C-Up>    :exec g:Lf_py "rgExplManager._toUpInPopup()"<CR>
         nnoremap <buffer> <silent> <C-Down>  :exec g:Lf_py "rgExplManager._toDownInPopup()"<CR>
@@ -104,6 +105,15 @@ function! leaderf#Rg#TimerCallback(id)
     call leaderf#LfPy("rgExplManager._workInIdle(bang=True)")
 endfunction
 
+function! leaderf#Rg#ApplyChanges(autosave)
+    call leaderf#LfPy(printf("rgExplManager.applyChanges(%s)", a:autosave ? "True" : "False"))
+endfunction
+
+function! leaderf#Rg#SaveCurrentBuffer(buf_number_dict)
+    if has_key(a:buf_number_dict, bufnr('%'))
+        update
+    endif
+endfunction
 
 let s:type_list = []
 function! s:rg_type_list() abort
