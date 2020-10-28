@@ -973,6 +973,8 @@ class RgExplManager(Manager):
         except KeyboardInterrupt: # <C-C>
             pass
         finally:
+            self._orig_buffer = self._getInstance().buffer[:]
+
             saved_eventignore = vim.options['eventignore']
             vim.options['eventignore'] = 'BufLeave,WinEnter,BufEnter'
             vim.current.tabpage, vim.current.window, vim.current.buffer = cur_pos
