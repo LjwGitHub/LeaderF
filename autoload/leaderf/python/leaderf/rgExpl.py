@@ -969,7 +969,7 @@ class RgExplManager(Manager):
                 if autosave:
                     lfCmd("bufdo call leaderf#Rg#SaveCurrentBuffer(%s)" % str(buf_number_dict))
             finally:
-                vim.current.tabpage, vim.current.window, vim.current.buffer = orig_pos
+                lfCmd("silent! buf %d" % orig_pos[2].number)
         except KeyboardInterrupt: # <C-C>
             pass
         finally:
