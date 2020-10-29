@@ -109,6 +109,10 @@ function! leaderf#Rg#ApplyChanges()
     call leaderf#LfPy("rgExplManager.applyChanges()")
 endfunction
 
+function! leaderf#Rg#UndoLastChange()
+    call leaderf#LfPy("rgExplManager.undo()")
+endfunction
+
 function! leaderf#Rg#ApplyChangesAndSave()
     try
         let g:Lf_rg_apply_changes_and_save = 1
@@ -120,6 +124,13 @@ endfunction
 
 function! leaderf#Rg#SaveCurrentBuffer(buf_number_dict)
     if has_key(a:buf_number_dict, bufnr('%'))
+        update
+    endif
+endfunction
+
+function! leaderf#Rg#Undo(buf_number_dict)
+    if has_key(a:buf_number_dict, bufnr('%'))
+        undo
         update
     endif
 endfunction

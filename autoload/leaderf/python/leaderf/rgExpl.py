@@ -413,6 +413,7 @@ class RgExplManager(Manager):
         self._match_path = False
         self._has_column = False
         self._orig_buffer = []
+        self._buf_number_dict = {}
 
     def _getExplClass(self):
         return RgExplorer
@@ -886,6 +887,7 @@ class RgExplManager(Manager):
                 lfCmd("setlocal buftype=acwrite")
                 lfCmd("autocmd! BufWriteCmd <buffer> nested call leaderf#Rg#ApplyChanges()")
                 lfCmd("command! -buffer W call leaderf#Rg#ApplyChangesAndSave()")
+                lfCmd("command! -buffer Undo call leaderf#Rg#UndoLastChange()")
                 lfCmd("setlocal nomodified")
                 lfCmd("setlocal modifiable")
                 lfCmd("setlocal undolevels=1000")
@@ -923,7 +925,7 @@ class RgExplManager(Manager):
             vim.options['eventignore'] = saved_eventignore
 
             try:
-                buf_number_dict = {}
+                self._buf_number_dict = {}
                 for n, line in enumerate(self._getInstance().buffer):
                     try:
                         if self._orig_buffer[n] == line: # no changes
@@ -972,14 +974,14 @@ class RgExplManager(Manager):
 
                         buf_number = int(lfEval("bufnr('%s')" % escQuote(file)))
                         vim.buffers[buf_number][int(line_num) - 1] = content
-                        buf_number_dict[buf_number] = 0
+                        self._buf_number_dict[buf_number] = 0
                     except vim.error:
                         lfPrintTraceback()
                     except Exception:
                         lfPrintTraceback(file)
 
                 if lfEval("exists('g:Lf_rg_apply_changes_and_save')") == '1':
-                    lfCmd("bufdo call leaderf#Rg#SaveCurrentBuffer(%s)" % str(buf_number_dict))
+                    lfCmd("bufdo call leaderf#Rg#SaveCurrentBuffer(%s)" % str(self._buf_number_dict))
             finally:
                 lfCmd("silent! buf %d" % orig_pos[2].number)
         except KeyboardInterrupt: # <C-C>
@@ -995,6 +997,10 @@ class RgExplManager(Manager):
             lfCmd("setlocal nomodified")
             lfCmd("echohl WarningMsg | redraw | echo ' Done!' | echohl None")
             lfCmd("silent! doautocmd twoline BufWinEnter")
+
+    def undo(self):
+        lfCmd("bufdo call leaderf#Rg#Undo(%s)" % str(self._buf_number_dict))
+        self._buf_number_dict = {}
 
 
 #*****************************************************
