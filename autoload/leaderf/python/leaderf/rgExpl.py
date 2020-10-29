@@ -900,10 +900,13 @@ class RgExplManager(Manager):
                 return
             string = lfEval("input('Replace with: ')")
             flags = lfEval("input('flags: ', 'gc')")
-            lfCmd("keepp %d;$s/\(^.\+\(:\d\+:\|-\d\+-\).\{-}\)\@<=%s/%s/%s" %
+            lfCmd("%d;$s/\(^.\+\(:\d\+:\|-\d\+-\).\{-}\)\@<=%s/%s/%s" %
                     (self._getInstance().helpLength + 1, pattern.replace('/', '\/'),
                      string.replace('/', '\/'), flags))
         finally:
+            lfCmd("call histdel('search', -1)")
+            lfCmd("let @/ = histget('search', -1)")
+            lfCmd("nohlsearch")
             lfCmd("echohl None")
 
     def applyChanges(self):
