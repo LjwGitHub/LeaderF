@@ -37,8 +37,8 @@ function! leaderf#Rg#Maps()
     nnoremap <buffer> <silent> Q             :exec g:Lf_py "rgExplManager.outputToQflist()"<CR>
     nnoremap <buffer> <silent> L             :exec g:Lf_py "rgExplManager.outputToLoclist()"<CR>
     nnoremap <buffer> <silent> r             :exec g:Lf_py "rgExplManager.replace()"<CR>
-    nnoremap <buffer> <silent> w             :exec g:Lf_py "rgExplManager.applyChanges()"<CR>
-    nnoremap <buffer> <silent> W             :exec g:Lf_py "rgExplManager.applyChanges(True)"<CR>
+    nnoremap <buffer> <silent> w             :w<CR>
+    nnoremap <buffer> <silent> W             :call leaderf#Rg#ApplyChangesAndSave()<CR>
     if has("nvim")
         nnoremap <buffer> <silent> <C-Up>    :exec g:Lf_py "rgExplManager._toUpInPopup()"<CR>
         nnoremap <buffer> <silent> <C-Down>  :exec g:Lf_py "rgExplManager._toDownInPopup()"<CR>
@@ -105,8 +105,17 @@ function! leaderf#Rg#TimerCallback(id)
     call leaderf#LfPy("rgExplManager._workInIdle(bang=True)")
 endfunction
 
-function! leaderf#Rg#ApplyChanges(autosave)
-    call leaderf#LfPy(printf("rgExplManager.applyChanges(%s)", a:autosave ? "True" : "False"))
+function! leaderf#Rg#ApplyChanges()
+    call leaderf#LfPy("rgExplManager.applyChanges()")
+endfunction
+
+function! leaderf#Rg#ApplyChangesAndSave()
+    try
+        let g:Lf_rg_apply_changes_and_save = 1
+        write
+    finally
+        unlet g:Lf_rg_apply_changes_and_save
+    endtry
 endfunction
 
 function! leaderf#Rg#SaveCurrentBuffer(buf_number_dict)

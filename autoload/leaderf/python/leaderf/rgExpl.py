@@ -878,11 +878,14 @@ class RgExplManager(Manager):
         return items
 
     def replace(self):
+        if self._read_finished == 0:
+            return
+
         try:
             if not self._getInstance().buffer.options["modifiable"]:
                 lfCmd("setlocal buftype=acwrite")
-                lfCmd("autocmd! BufWriteCmd <buffer> nested call leaderf#Rg#ApplyChanges(0)")
-                lfCmd("command! -buffer W call leaderf#Rg#ApplyChanges(1)")
+                lfCmd("autocmd! BufWriteCmd <buffer> nested call leaderf#Rg#ApplyChanges()")
+                lfCmd("command! -buffer W call leaderf#Rg#ApplyChangesAndSave()")
                 lfCmd("setlocal nomodified")
                 lfCmd("setlocal modifiable")
                 lfCmd("setlocal undolevels=1000")
@@ -903,7 +906,7 @@ class RgExplManager(Manager):
         finally:
             lfCmd("echohl None")
 
-    def applyChanges(self, autosave=False):
+    def applyChanges(self):
         if not self._getInstance().buffer.options["modified"]:
             return
 
@@ -966,7 +969,7 @@ class RgExplManager(Manager):
                     except Exception as e:
                         lfPrintError(e)
 
-                if autosave:
+                if lfEval("exists('g:Lf_rg_apply_changes_and_save')") == '1':
                     lfCmd("bufdo call leaderf#Rg#SaveCurrentBuffer(%s)" % str(buf_number_dict))
             finally:
                 lfCmd("silent! buf %d" % orig_pos[2].number)
