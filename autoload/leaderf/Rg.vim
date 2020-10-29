@@ -39,6 +39,7 @@ function! leaderf#Rg#Maps()
     nnoremap <buffer> <silent> r             :exec g:Lf_py "rgExplManager.replace()"<CR>
     nnoremap <buffer> <silent> w             :w<CR>
     nnoremap <buffer> <silent> W             :call leaderf#Rg#ApplyChangesAndSave()<CR>
+    nnoremap <buffer> <silent> U             :call leaderf#Rg#UndoLastChange()<CR>
     if has("nvim")
         nnoremap <buffer> <silent> <C-Up>    :exec g:Lf_py "rgExplManager._toUpInPopup()"<CR>
         nnoremap <buffer> <silent> <C-Down>  :exec g:Lf_py "rgExplManager._toDownInPopup()"<CR>
@@ -131,7 +132,6 @@ endfunction
 function! leaderf#Rg#Undo(buf_number_dict)
     if has_key(a:buf_number_dict, bufnr('%'))
         undo
-        update
     endif
 endfunction
 

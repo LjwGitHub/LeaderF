@@ -189,6 +189,8 @@ command! -bar -nargs=0 LeaderfColorscheme Leaderf colorscheme
 
 command! -bar -nargs=0 LeaderfRgInteractive call leaderf#Rg#Interactive()
 command! -bar -nargs=0 LeaderfRgRecall exec "Leaderf! rg --recall"
+"command! -bar -nargs=0 LeaderfRgApplyChangesAndSave call leaderf#Rg#ApplyChangesAndSave()
+"command! -bar -nargs=0 LeaderfRgUndo call leaderf#Rg#UndoLastChange()
 
 command! -bar -nargs=0 LeaderfFiletype Leaderf filetype
 
