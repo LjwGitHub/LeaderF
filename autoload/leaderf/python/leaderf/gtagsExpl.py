@@ -473,8 +473,8 @@ class GtagsExplorer(Explorer):
                 shutil.rmtree(dbpath)
 
             lfCmd("redraw | echo 'Done!'")
-        except Exception as e:
-            lfPrintError(e)
+        except Exception:
+            lfPrintTraceback()
         finally:
             lfCmd("echohl NONE")
 
@@ -970,8 +970,8 @@ class GtagsExplManager(Manager):
                 self._cursorline_dict[vim.current.window] = vim.current.window.options["cursorline"]
 
             lfCmd("setlocal cursorline")
-        except vim.error as e:
-            lfPrintError(e)
+        except vim.error:
+            lfPrintTraceback()
 
     def updateGtags(self, filename, single_update, auto=True):
         self._getExplorer().updateGtags(filename, single_update, auto)

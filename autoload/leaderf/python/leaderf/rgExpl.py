@@ -487,8 +487,8 @@ class RgExplManager(Manager):
                 self._cursorline_dict[vim.current.window] = vim.current.window.options["cursorline"]
 
             lfCmd("setlocal cursorline")
-        except vim.error as e:
-            lfPrintError(e)
+        except vim.error:
+            lfPrintTraceback()
 
     def setArguments(self, arguments):
         self._arguments = arguments
@@ -927,22 +927,25 @@ class RgExplManager(Manager):
                             continue
 
                         if "-A" in self._arguments or "-B" in self._arguments or "-C" in self._arguments:
-                            m = re.match(r'^(.+?)([:-])(\d+)\2', line)
-                            file, sep, line_num = m.group(1, 2, 3)
+                            m = re.match(r'^(.+?)([:-])(\d+)\2(.*)', line)
+                            file, sep, line_num, content = m.group(1, 2, 3, 4)
                             if not os.path.exists(lfDecode(file)):
                                 if sep == ':':
                                     sep = '-'
                                 else:
                                     sep = ':'
-                                m = re.match(r'^(.+?)%s(\d+)%s' % (sep, sep), line)
+                                m = re.match(r'^(.+?)(%s)(\d+)%s(.*)' % (sep, sep), line)
                                 if m:
-                                    file, line_num = m.group(1, 2)
+                                    file, sep, line_num, content = m.group(1, 2, 3, 4)
                             if not re.search(r"\d+_'No_Name_(\d+)'", file):
                                 i = 1
                                 while not os.path.exists(lfDecode(file)):
-                                    m = re.match(r'^(.+?(?:([:-])\d+.*?){%d})\2(\d+)\2' % i, line)
+                                    m = re.match(r'^(.+?(?:([:-])\d+.*?){%d})\2(\d+)\2(.*)' % i, line)
                                     i += 1
-                                    file, line_num = m.group(1, 3)
+                                    file, sep, line_num, content = m.group(1, 2, 3, 4)
+
+                            if self._has_column and sep == ':':
+                                content = content.split(':', 1)[1]
                         else:
                             m = re.match(r'^(.+?):(\d+):(.*)', line)
                             file, line_num, content = m.group(1, 2, 3)
@@ -954,6 +957,9 @@ class RgExplManager(Manager):
                                     i += 1
                                     file, line_num, content = m.group(1, 2, 3)
 
+                            if self._has_column:
+                                content = content.split(':', 1)[1]
+
                         if not os.path.isabs(file):
                             file = os.path.join(self._getInstance().getCwd(), lfDecode(file))
                             file = os.path.normpath(lfEncode(file))
@@ -964,10 +970,10 @@ class RgExplManager(Manager):
                         buf_number = int(lfEval("bufnr('%s')" % escQuote(file)))
                         vim.buffers[buf_number][int(line_num) - 1] = content
                         buf_number_dict[buf_number] = 0
-                    except vim.error as e:
-                        lfPrintError(e)
-                    except Exception as e:
-                        lfPrintError(e)
+                    except vim.error:
+                        lfPrintTraceback()
+                    except Exception:
+                        lfPrintTraceback(file)
 
                 if lfEval("exists('g:Lf_rg_apply_changes_and_save')") == '1':
                     lfCmd("bufdo call leaderf#Rg#SaveCurrentBuffer(%s)" % str(buf_number_dict))
@@ -985,6 +991,7 @@ class RgExplManager(Manager):
 
             lfCmd("setlocal nomodified")
             lfCmd("echohl WarningMsg | redraw | echo ' Done!' | echohl None")
+            lfCmd("silent! doautocmd twoline BufWinEnter")
 
 
 #*****************************************************
