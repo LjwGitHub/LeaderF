@@ -903,10 +903,10 @@ class RgExplManager(Manager):
             lfCmd("%d;$s/\(^.\+\(:\d\+:\|-\d\+-\).\{-}\)\@<=%s/%s/%s" %
                     (self._getInstance().helpLength + 1, pattern.replace('/', '\/'),
                      string.replace('/', '\/'), flags))
-        finally:
             lfCmd("call histdel('search', -1)")
             lfCmd("let @/ = histget('search', -1)")
             lfCmd("nohlsearch")
+        finally:
             lfCmd("echohl None")
 
     def applyChanges(self):
