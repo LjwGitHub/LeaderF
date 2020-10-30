@@ -890,6 +890,7 @@ class RgExplManager(Manager):
             if not self._getInstance().buffer.options["modifiable"]:
                 lfCmd("setlocal buftype=acwrite")
                 lfCmd("autocmd! BufWriteCmd <buffer> nested call leaderf#Rg#ApplyChanges()")
+                lfCmd("autocmd! BufHidden <buffer> nested call leaderf#Rg#Quit()")
                 lfCmd("command! -buffer W call leaderf#Rg#ApplyChangesAndSave(1)")
                 lfCmd("command! -buffer Undo call leaderf#Rg#UndoLastChange()")
                 lfCmd("setlocal nomodified")
@@ -1033,6 +1034,21 @@ class RgExplManager(Manager):
             lfCmd("setlocal nomodified")
             lfCmd("echohl WarningMsg | redraw | echo ' undo finished!' | echohl None")
 
+    def quit(self):
+        if self._getInstance().buffer.options["modified"]:
+            selection = int(lfEval("""confirm("buffer changed, apply changes or discard?", "&apply\n&discard")"""))
+            if selection == 0:
+                return
+            elif selection == 1:
+                lfCmd("call leaderf#Rg#ApplyChangesAndSave(1)")
+                self._getInstance().window.cursor = (1, 0)
+                lfCmd("setlocal buftype=nofile nomodifiable undolevels=-1")
+            else:
+                self._getInstance().buffer[:] = self._orig_buffer
+                self._getInstance().window.cursor = (1, 0)
+                lfCmd("setlocal buftype=nofile nomodifiable undolevels=-1")
+
+        super(RgExplManager, self).quit()
 
 #*****************************************************
 # rgExplManager is a singleton

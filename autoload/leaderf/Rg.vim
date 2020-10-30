@@ -114,6 +114,10 @@ function! leaderf#Rg#UndoLastChange()
     call leaderf#LfPy("rgExplManager.undo()")
 endfunction
 
+function! leaderf#Rg#Quit()
+    call leaderf#LfPy("rgExplManager.quit()")
+endfunction
+
 function! leaderf#Rg#ApplyChangesAndSave(save)
     if ! &modified
         return
