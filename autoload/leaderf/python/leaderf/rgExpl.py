@@ -1011,6 +1011,9 @@ class RgExplManager(Manager):
             lfCmd("echohl WarningMsg | redraw | echo ' Done!' | echohl None")
 
     def undo(self):
+        if int(lfEval("undotree()['seq_cur']")) == 0 or lfEval("&buftype") == "nofile":
+            return
+
         try:
             orig_pos = self._getInstance().getOriginalPos()
             cur_pos = (vim.current.tabpage, vim.current.window, vim.current.buffer)
