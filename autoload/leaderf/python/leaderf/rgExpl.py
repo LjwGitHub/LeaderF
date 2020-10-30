@@ -570,9 +570,13 @@ class RgExplManager(Manager):
         help.append('" t : open file under cursor in a new tabpage')
         help.append('" p : preview the result')
         help.append('" d : delete the line under the cursor')
-        help.append('" Q : output result quickfix list ')
-        help.append('" L : output result location list ')
+        help.append('" Q : output result quickfix list')
+        help.append('" L : output result location list')
         help.append('" i/<Tab> : switch to input mode')
+        help.append('" r : replace a pattern')
+        help.append('" w : apply the changes to buffer without saving')
+        help.append('" W : apply the changes to buffer and save')
+        help.append('" U : undo the last changes applied')
         help.append('" q : quit')
         help.append('" <F1> : toggle this help')
         help.append('" ---------------------------------------------------------')
@@ -886,7 +890,7 @@ class RgExplManager(Manager):
             if not self._getInstance().buffer.options["modifiable"]:
                 lfCmd("setlocal buftype=acwrite")
                 lfCmd("autocmd! BufWriteCmd <buffer> nested call leaderf#Rg#ApplyChanges()")
-                lfCmd("command! -buffer W call leaderf#Rg#ApplyChangesAndSave()")
+                lfCmd("command! -buffer W call leaderf#Rg#ApplyChangesAndSave(1)")
                 lfCmd("command! -buffer Undo call leaderf#Rg#UndoLastChange()")
                 lfCmd("setlocal nomodified")
                 lfCmd("setlocal modifiable")
@@ -1027,7 +1031,6 @@ class RgExplManager(Manager):
 
             lfCmd("undo")
             lfCmd("setlocal nomodified")
-            lfCmd("silent! doautocmd twoline BufWinEnter")
             lfCmd("echohl WarningMsg | redraw | echo ' undo finished!' | echohl None")
 
 

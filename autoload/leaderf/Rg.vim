@@ -37,8 +37,8 @@ function! leaderf#Rg#Maps()
     nnoremap <buffer> <silent> Q             :exec g:Lf_py "rgExplManager.outputToQflist()"<CR>
     nnoremap <buffer> <silent> L             :exec g:Lf_py "rgExplManager.outputToLoclist()"<CR>
     nnoremap <buffer> <silent> r             :exec g:Lf_py "rgExplManager.replace()"<CR>
-    nnoremap <buffer> <silent> w             :w<CR>
-    nnoremap <buffer> <silent> W             :call leaderf#Rg#ApplyChangesAndSave()<CR>
+    nnoremap <buffer> <silent> w             :call leaderf#Rg#ApplyChangesAndSave(0)<CR>
+    nnoremap <buffer> <silent> W             :call leaderf#Rg#ApplyChangesAndSave(1)<CR>
     nnoremap <buffer> <silent> U             :call leaderf#Rg#UndoLastChange()<CR>
     if has("nvim")
         nnoremap <buffer> <silent> <C-Up>    :exec g:Lf_py "rgExplManager._toUpInPopup()"<CR>
@@ -114,12 +114,17 @@ function! leaderf#Rg#UndoLastChange()
     call leaderf#LfPy("rgExplManager.undo()")
 endfunction
 
-function! leaderf#Rg#ApplyChangesAndSave()
+function! leaderf#Rg#ApplyChangesAndSave(save)
+    if ! &modified
+        return
+    endif
     try
-        let g:Lf_rg_apply_changes_and_save = 1
+        if a:save
+            let g:Lf_rg_apply_changes_and_save = 1
+        endif
         write
     finally
-        unlet g:Lf_rg_apply_changes_and_save
+        silent! unlet g:Lf_rg_apply_changes_and_save
     endtry
 endfunction
 

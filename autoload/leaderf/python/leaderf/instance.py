@@ -747,7 +747,8 @@ class LfInstance(object):
             lfCmd("autocmd ColorScheme <buffer> doautocmd syntax")
             lfCmd("autocmd CursorMoved <buffer> let g:Lf_{}_StlLineNumber = 1 + line('$') - line('.')".format(self._category))
             lfCmd("autocmd VimResized * let g:Lf_VimResized = 1")
-            lfCmd("autocmd BufHidden <buffer> setlocal buftype=nofile nomodifiable")
+            if self._category == 'Rg':
+                lfCmd("autocmd BufHidden <buffer> setlocal buftype=nofile nomodifiable undolevels=-1")
             lfCmd("augroup END")
 
         saved_eventignore = vim.options['eventignore']
