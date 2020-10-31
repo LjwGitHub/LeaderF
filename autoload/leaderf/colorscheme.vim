@@ -149,6 +149,13 @@ function! leaderf#colorscheme#highlightMode(category, mode)
 endfunction
 
 function! leaderf#colorscheme#highlightBlank(category, bufnr)
+    let mod = getbufvar(a:bufnr, "&modified")
+    if getbufvar(a:bufnr, "lf_buffer_changed") == mod
+        return
+    endif
+
+    call setbufvar(a:bufnr, "lf_buffer_changed", mod)
+
     if getbufvar(a:bufnr, "&modified") == 1
         let blank = "DiffChange"
     else
