@@ -888,10 +888,10 @@ class RgExplManager(Manager):
 
         try:
             if not self._getInstance().buffer.options["modifiable"]:
-                lfCmd("setlocal buftype=acwrite")
-                lfCmd("setlocal nomodified")
-                lfCmd("setlocal modifiable")
-                lfCmd("setlocal undolevels=1000")
+                self._getInstance().buffer.options["buftype"] = "acwrite"
+                self._getInstance().buffer.options["modified"] = False
+                self._getInstance().buffer.options["modifiable"] = True
+                self._getInstance().buffer.options["undolevels"] = 1000
 
                 lfCmd("augroup Lf_Rg_ReplaceMode")
                 lfCmd("autocmd!")
