@@ -147,6 +147,23 @@ function! leaderf#colorscheme#highlightMode(category, mode)
     redrawstatus
 endfunction
 
+function! leaderf#colorscheme#highlightBlank(category)
+    if &modified == 1
+        let blank = "DiffText"
+    else
+        let blank = "Lf_hl_stlBlank"
+    endif
+    let sid = synIDtrans(hlID(blank))
+    let guibg = synIDattr(sid, "bg", "gui")
+    let ctermbg = synIDattr(sid, "bg", "cterm")
+    exec printf("hi link Lf_hl_%s_stlBlank %s", a:category, blank)
+    exec printf("hi Lf_hl_%s_stlSeparator3 guibg=%s", a:category, guibg == '' ? 'NONE': guibg)
+    exec printf("hi Lf_hl_%s_stlSeparator3 ctermbg=%s", a:category, ctermbg == '' ? 'NONE': ctermbg)
+    exec printf("hi Lf_hl_%s_stlSeparator4 guibg=%s", a:category, guibg == '' ? 'NONE': guibg)
+    exec printf("hi Lf_hl_%s_stlSeparator4 ctermbg=%s", a:category, ctermbg == '' ? 'NONE': ctermbg)
+    redrawstatus
+endfunction
+
 function! leaderf#colorscheme#setStatusline(bufnr, stl)
     for n in range(1, winnr('$'))
         if winbufnr(n) == a:bufnr

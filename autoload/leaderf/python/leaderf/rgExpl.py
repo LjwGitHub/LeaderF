@@ -889,8 +889,12 @@ class RgExplManager(Manager):
         try:
             if not self._getInstance().buffer.options["modifiable"]:
                 lfCmd("setlocal buftype=acwrite")
-                lfCmd("autocmd! BufWriteCmd <buffer> nested call leaderf#Rg#ApplyChanges()")
-                lfCmd("autocmd! BufHidden <buffer> nested call leaderf#Rg#Quit()")
+                lfCmd("augroup Lf_Rg_ReplaceMode")
+                lfCmd("autocmd!")
+                lfCmd("autocmd BufWriteCmd <buffer> nested call leaderf#Rg#ApplyChanges()")
+                lfCmd("autocmd BufHidden <buffer> nested call leaderf#Rg#Quit()")
+                lfCmd("autocmd TextChanged,TextChangedI <buffer> call leaderf#colorscheme#highlightBlank('{0}')".format(self._getExplorer().getStlCategory()))
+                lfCmd("augroup END")
                 lfCmd("command! -buffer W call leaderf#Rg#ApplyChangesAndSave(1)")
                 lfCmd("command! -buffer Undo call leaderf#Rg#UndoLastChange()")
                 lfCmd("setlocal nomodified")
@@ -1008,6 +1012,7 @@ class RgExplManager(Manager):
 
             lfCmd("setlocal nomodified")
             lfCmd("silent! doautocmd twoline BufWinEnter")
+            lfCmd("call leaderf#colorscheme#highlightBlank('{0}')".format(self._getExplorer().getStlCategory()))
             lfCmd("echohl WarningMsg | redraw | echo ' Done!' | echohl None")
 
     def undo(self):
@@ -1045,12 +1050,12 @@ class RgExplManager(Manager):
             elif selection == 1:
                 lfCmd("call leaderf#Rg#ApplyChangesAndSave(1)")
                 self._getInstance().window.cursor = (1, 0)
-                lfCmd("setlocal buftype=nofile nomodifiable undolevels=-1")
             else:
                 self._getInstance().buffer[:] = self._orig_buffer
                 self._getInstance().window.cursor = (1, 0)
-                lfCmd("setlocal buftype=nofile nomodifiable undolevels=-1")
 
+        lfCmd("setlocal buftype=nofile nomodifiable undolevels=-1")
+        lfCmd("silent! augroup! Lf_Rg_ReplaceMode")
         super(RgExplManager, self).quit()
 
 #*****************************************************
