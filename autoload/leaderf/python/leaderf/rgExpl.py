@@ -945,6 +945,7 @@ class RgExplManager(Manager):
             vim.options['eventignore'] = saved_eventignore
 
             self._buf_number_dict = {}
+            lfCmd("echohl WarningMsg | redraw | echo ' Applying changes ...' | echohl None")
             for n, line in enumerate(self._getInstance().buffer):
                 try:
                     if self._orig_buffer[n] == line: # no changes
