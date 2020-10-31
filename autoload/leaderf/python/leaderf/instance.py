@@ -738,10 +738,10 @@ class LfInstance(object):
         if not self._is_colorscheme_autocmd_set:
             self._is_colorscheme_autocmd_set = True
             lfCmd("call leaderf#colorscheme#popup#load('{}', '{}')".format(self._category, lfEval("get(g:, 'Lf_PopupColorscheme', 'default')")))
-            lfCmd("call leaderf#colorscheme#highlight('{}')".format(self._category))
+            lfCmd("call leaderf#colorscheme#highlight('{}', {})".format(self._category, self._buffer_object.number))
             lfCmd("augroup Lf_{}_Colorscheme".format(self._category))
             lfCmd("autocmd!")
-            lfCmd("autocmd ColorScheme * call leaderf#colorscheme#highlight('{}')".format(self._category))
+            lfCmd("autocmd ColorScheme * call leaderf#colorscheme#highlight('{}', {})".format(self._category, self._buffer_object.number))
             lfCmd("autocmd ColorScheme * call leaderf#colorscheme#highlightMode('{0}', g:Lf_{0}_StlMode)".format(self._category))
             lfCmd("autocmd ColorScheme <buffer> doautocmd syntax")
             lfCmd("autocmd CursorMoved <buffer> let g:Lf_{}_StlLineNumber = 1 + line('$') - line('.')".format(self._category))

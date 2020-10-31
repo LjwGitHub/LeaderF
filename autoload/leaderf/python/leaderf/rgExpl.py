@@ -889,17 +889,20 @@ class RgExplManager(Manager):
         try:
             if not self._getInstance().buffer.options["modifiable"]:
                 lfCmd("setlocal buftype=acwrite")
-                lfCmd("augroup Lf_Rg_ReplaceMode")
-                lfCmd("autocmd!")
-                lfCmd("autocmd BufWriteCmd <buffer> nested call leaderf#Rg#ApplyChanges()")
-                lfCmd("autocmd BufHidden <buffer> nested call leaderf#Rg#Quit()")
-                lfCmd("autocmd TextChanged,TextChangedI <buffer> call leaderf#colorscheme#highlightBlank('{0}')".format(self._getExplorer().getStlCategory()))
-                lfCmd("augroup END")
-                lfCmd("command! -buffer W call leaderf#Rg#ApplyChangesAndSave(1)")
-                lfCmd("command! -buffer Undo call leaderf#Rg#UndoLastChange()")
                 lfCmd("setlocal nomodified")
                 lfCmd("setlocal modifiable")
                 lfCmd("setlocal undolevels=1000")
+                lfCmd("augroup Lf_Rg_ReplaceMode")
+
+                lfCmd("autocmd!")
+                lfCmd("autocmd BufWriteCmd <buffer> nested call leaderf#Rg#ApplyChanges()")
+                lfCmd("autocmd BufHidden <buffer> nested call leaderf#Rg#Quit()")
+                lfCmd("autocmd TextChanged,TextChangedI <buffer> call leaderf#colorscheme#highlightBlank('{}', {})"
+                        .format(self._getExplorer().getStlCategory(), self._getInstance().buffer.number))
+                lfCmd("augroup END")
+
+                lfCmd("command! -buffer W call leaderf#Rg#ApplyChangesAndSave(1)")
+                lfCmd("command! -buffer Undo call leaderf#Rg#UndoLastChange()")
 
             lfCmd("echohl Question")
             self._orig_buffer = self._getInstance().buffer[:]
@@ -924,7 +927,7 @@ class RgExplManager(Manager):
             else:
                 lfPrintError(e)
         except Exception as e:
-            lfPrintError(e)
+            lfPrintTraceback()
         finally:
             lfCmd("echohl None")
 
@@ -1012,7 +1015,8 @@ class RgExplManager(Manager):
 
             lfCmd("setlocal nomodified")
             lfCmd("silent! doautocmd twoline BufWinEnter")
-            lfCmd("call leaderf#colorscheme#highlightBlank('{0}')".format(self._getExplorer().getStlCategory()))
+            lfCmd("call leaderf#colorscheme#highlightBlank('{}', {})"
+                    .format(self._getExplorer().getStlCategory(), self._getInstance().buffer.number))
             lfCmd("echohl WarningMsg | redraw | echo ' Done!' | echohl None")
 
     def undo(self):
@@ -1039,7 +1043,6 @@ class RgExplManager(Manager):
             vim.options['eventignore'] = saved_eventignore
 
             lfCmd("undo")
-            lfCmd("setlocal nomodified")
             lfCmd("echohl WarningMsg | redraw | echo ' undo finished!' | echohl None")
 
     def quit(self):
