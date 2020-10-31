@@ -1060,8 +1060,10 @@ class RgExplManager(Manager):
         self._getInstance().buffer.options["buftype"] = "nofile"
         self._getInstance().buffer.options["modifiable"] = False
         self._getInstance().buffer.options["undolevels"] = -1
-        lfCmd("silent! augroup! Lf_Rg_ReplaceMode")
+
         super(RgExplManager, self).quit()
+
+        lfCmd("silent! autocmd! Lf_Rg_ReplaceMode")
 
 #*****************************************************
 # rgExplManager is a singleton
