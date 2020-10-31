@@ -973,7 +973,6 @@ class RgExplManager(Manager):
                     else:
                         m = re.match(r'^(.+?):(\d+):(.*)', line)
                         file, line_num, content = m.group(1, 2, 3)
-                        # if os.name != 'nt' and not re.search(r"\d+_'No_Name_(\d+)'", file):
                         if not re.search(r"\d+_'No_Name_(\d+)'", file):
                             i = 1
                             while not os.path.exists(lfDecode(file)):
