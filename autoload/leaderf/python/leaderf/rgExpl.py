@@ -892,8 +892,8 @@ class RgExplManager(Manager):
                 lfCmd("setlocal nomodified")
                 lfCmd("setlocal modifiable")
                 lfCmd("setlocal undolevels=1000")
-                lfCmd("augroup Lf_Rg_ReplaceMode")
 
+                lfCmd("augroup Lf_Rg_ReplaceMode")
                 lfCmd("autocmd!")
                 lfCmd("autocmd BufWriteCmd <buffer> nested call leaderf#Rg#ApplyChanges()")
                 lfCmd("autocmd BufHidden <buffer> nested call leaderf#Rg#Quit()")
@@ -1057,7 +1057,9 @@ class RgExplManager(Manager):
                 self._getInstance().buffer[:] = self._orig_buffer
                 self._getInstance().window.cursor = (1, 0)
 
-        lfCmd("setlocal buftype=nofile nomodifiable undolevels=-1")
+        self._getInstance().buffer.options["buftype"] = "nofile"
+        self._getInstance().buffer.options["modifiable"] = False
+        self._getInstance().buffer.options["undolevels"] = -1
         lfCmd("silent! augroup! Lf_Rg_ReplaceMode")
         super(RgExplManager, self).quit()
 
