@@ -132,6 +132,7 @@ function! leaderf#colorscheme#highlight(category)
         exec hiCmd
     endfor
 
+    call leaderf#colorscheme#highlightBlank(a:category)
     redrawstatus
 endfunction
 
